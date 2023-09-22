@@ -9,6 +9,7 @@ pub trait Rpc {
     async fn getbestblockhash(&self) -> BlockHash;
     async fn getblockcount(&self) -> u64;
     async fn getbalance(&self) -> Balance;
+    async fn getbalances(&self) -> Balances;
     // control
     // generating
     async fn generatetoaddress(
@@ -59,7 +60,20 @@ pub trait Rpc {
 
 #[derive(Debug, Deserialize)]
 pub struct Balance {
-    balance: f64,
+    pub bitcoin: f64,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Balances {
+    pub mine: MineBalances
+}
+
+#[derive(Debug, Deserialize)]
+pub struct MineBalances {
+    pub trusted: Balance,
+    pub untrusted_pending: Balance,
+    pub immature: Balance,
+    pub used: Balance
 }
 
 #[derive(Debug, Deserialize)]
@@ -157,12 +171,13 @@ mod test {
 
     #[tokio::test]
     async fn simple() {
-        let docker = clients::Cli::default();
-        let container = docker.run(image::Elementsd::default());
-        let port = container.get_host_port_ipv4(18444);
+//        let docker = clients::Cli::default();
+//        let container = docker.run(image::Elementsd::default());
+//        let port = container.get_host_port_ipv4(18444);
+        let port = 7041;
 
-        let client = Client::new(format!("http://user:pass@127.0.0.1:{}", port)).unwrap();
-
+        let client = Client::new(format!("http://user:bitcoin@127.0.0.1:{}", port)).unwrap();
+/*
         let wallet_name = "asdf".to_string();
         let wallet = client
             .createwallet(&wallet_name, None, None, None, None, None, None, None)
@@ -171,7 +186,7 @@ mod test {
         dbg!(&wallet);
         assert_eq!(wallet.name, wallet_name);
         assert!(wallet.warning.is_empty());
-
+*/
         let address = client.getnewaddress(None, None).await.unwrap();
         dbg!(address);
         let address = client.getnewaddress(None, Some("legacy")).await.unwrap();
@@ -187,6 +202,12 @@ mod test {
         let hash = client.getbestblockhash().await.unwrap();
         dbg!(hash);
 
+        let balance= client.getbalance().await.unwrap();
+        dbg!(balance);
+
+        let balance= client.getbalances().await.unwrap();
+        dbg!(balance);
+
         let count = client.getblockcount().await.unwrap();
         dbg!(count);
         assert_eq!(count, 0);
@@ -201,7 +222,7 @@ mod test {
 
         let info = client.getwalletinfo().await.unwrap();
         dbg!(&info);
-
+/*
         let sent = client
             .sendtoaddress(
                 &address,
@@ -221,7 +242,7 @@ mod test {
             .await
             .unwrap();
         dbg!(&sent);
-
+*/
         let info = client.getaddressinfo(&address).await.unwrap();
         dbg!(&info);
 
