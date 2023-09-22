@@ -8,6 +8,7 @@ pub trait Rpc {
     // blockchain
     async fn getbestblockhash(&self) -> BlockHash;
     async fn getblockcount(&self) -> u64;
+    async fn getbalance(&self) -> Balance;
     // control
     // generating
     async fn generatetoaddress(
@@ -54,6 +55,11 @@ pub trait Rpc {
     async fn getnewaddress(&self, label: Option<&str>, address_type: Option<&str>) -> String;
     async fn getwalletinfo(&self) -> WalletInfo;
     // zmq
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Balance {
+    balance: f64,
 }
 
 #[derive(Debug, Deserialize)]
